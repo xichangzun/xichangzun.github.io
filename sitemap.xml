@@ -3,7 +3,7 @@
 
     <sitemap>
         <loc>https://xichangzun.github.io/post-sitemap.xml</loc>
-        <lastmod>2017-07-11T04:54:39.000Z</lastmod>
+        <lastmod>2017-07-13T04:58:16.000Z</lastmod>
     </sitemap>
 
     <sitemap>
@@ -12,8 +12,13 @@
     </sitemap>
 
     <sitemap>
+        <loc>https://xichangzun.github.io/category-sitemap.xml</loc>
+        <lastmod>2017-07-13T04:58:16.000Z</lastmod>
+    </sitemap>
+
+    <sitemap>
         <loc>https://xichangzun.github.io/tag-sitemap.xml</loc>
-        <lastmod>2017-07-11T04:54:39.000Z</lastmod>
+        
     </sitemap>
 
 </sitemapindex>
