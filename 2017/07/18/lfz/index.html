@@ -14,11 +14,11 @@
     <script async defer src="https://buttons.github.io/buttons.js"></script>
     <title>
         
-          Xcz Blog | Where I Am Myself
+          DSB2017冠军源码解析 - Xcz Blog | Where I Am Myself
         
     </title>
 
-    <link rel="canonical" href="https://xichangzun.github.io/categories/生活/">
+    <link rel="canonical" href="https://xichangzun.github.io/2017/07/18/lfz/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -69,8 +69,8 @@
 <style type="text/css">
     header.intro-header{
         
-            background-image: url('/undefined')
-            /*page*/
+            background-image: url('DSB.png')
+            /*post*/
         
     }
     
@@ -83,10 +83,20 @@
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                 
-                    <div class="site-heading">
-                        <h1>Xcz Blog</h1>
-                        <!--<hr class="small">-->
-                        <span class="subheading">做朋克得付出代价，不知道明天会怎样，我在乎我的明天所以我不行</span>
+                    <div class="post-heading">
+                        <div class="tags">
+                            
+                              <a class="tag" href="/tags/#深度学习" title="深度学习">深度学习</a>
+                            
+                              <a class="tag" href="/tags/#3D医学影像处理" title="3D医学影像处理">3D医学影像处理</a>
+                            
+                        </div>
+                        <h1>DSB2017冠军源码解析</h1>
+                        <h2 class="subheading">三维卷积网络设计与医学影像处理</h2>
+                        <span class="meta">
+                            Posted by XI Changzun on
+                            2017-07-18
+                        </span>
                     </div>
                 
 
@@ -189,192 +199,163 @@
 
 
     <!-- Main Content -->
-    <!-- Main Content -->
-<div class="container">
-    <div class="row">
-        
+    <!-- Modify by Yu-Hsuan Yen -->
 
-<!-- USE SIDEBAR -->
-    <!-- Post Container -->
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Post Container -->
             <div class="
-                col-lg-8 col-lg-offset-1
-                col-md-8 col-md-offset-1
-                col-sm-12
-                col-xs-12
-                post-container
-            ">
-            
-                
-<!-- Main Content -->
-<div class="container">
-    <div class="row">
-        <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-            <!-- 归档列表 -->
-            
-            
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
 
-             <!-- 归档列表 -->
+                <h1 id="前言">前言</h1>
+<p>因为实验室的需要，最近研究了DSB2017的几个优胜方案。一月份就知道这个奖金丰厚的比赛，没想到半年后自己也会和它扯上关系。就个人感受来说，医学影像的处理已经成为深度学习领域的热潮。这也让我不得不佩服导师的大局观，在深度学习刚刚兴起时，他就朝着与医学结合的方向走，早早站住了脚。人生啊···果然需要一点深谋远虑的智慧。</p>
+<h1 id="肺癌检测任务分析">肺癌检测任务分析</h1>
+<p>深度学习与医学结合，免不了要和大量的的3D图像接触：CT，超声，MRI。这次比赛的肺癌图像，在分辨率和信噪比方面，质量都很高，这为参赛人员省去了很多预处理的工作。以第一名为例，预处理阶段也仅仅是对图像的体素值进行了映射和归一化。</p>
+<p>肺癌图像处理的主要难点在于图像的大小。由于是3d图像，即使模型本身并不大，整张图在训练过程产生的中间结果依然会超出显存（12G）。排名最高的几个方法都对原始图像进行了缩放和裁剪。第一名的算法，从每个样本中裁剪出大小为128*128*128的方块组成训练样本，其中70%为正样本，包含至少一个目标节点；30%为负样本，从样本中随意抽取，其中一些不包含节点。</p>
+<h1 id="模型分析">模型分析</h1>
+<p>作者开源的代码可读性比较高，无奈自己比较懒，愣是拖了这么久才看完。模型的定义主要分布在<code>layer.py</code> <code>net_detector.py</code> <code>net_classifer.py</code>中。net_classifer.py是整个模型的定义文件，包含了net_detector中定义的区域提出网络。layer.py定义了一些可复用的组建，比如：残差块，hard_mining，提取区域函数等。这是作者提模型的detector部分。  <img src="nodulenet.png" alt="Nodule_net"></p>
+<p>整个模型类似于FasterRCNN，同时借鉴了U-net的思想。模型主要由18层的残差CNN组成，第一个方块对应程序中的preBlock，包含2个简单的3d卷积层，紧接着4个Block是4个残差Block，每个block分别包含[2，2，3，3]个卷积层。这四个Block相当于U-net中用于特征提取的前半部分。对应的后半部分由两个残差Block构成，分别接受前面Block的输出和对应的前向Block的输出。值得注意的是，在最后一个Block的输入中，还加入了坐标信息，加入坐标信息的作用还不太清楚。测试阶段，coord似乎只是计算出特征图每个点相对于输入中心点的偏移程度，每个点的值在-0.5到0.5之间。最后一个Block的输出作为提取到的特征，传递给分类网络做概率预测。分类网络抽取每个输出特征图的中心值作为分类特征。最后一个Block的输出为每个预测节点输出5个值，第一个用于分类，后面四个为x,y,z,r对应的回归量。</p>
+<h1 id="模型训练">模型训练</h1>
+<p>分类的损失函数是二分类交叉熵。检测的损失主为SmoothL1，作者还在其中加入了missLoss用于惩罚严重被低估的训练目标，不过该loss的有效性还不得而知。训练时，检测网络加入了实时硬例挖掘，同时交替训练分类和检测网络来减少过拟合。</p>
+<h1 id="参考资料">参考资料</h1>
+<ul>
+<li><a href="https://github.com/lfz/DSB2017" target="_blank" rel="external">源代码</a></li>
+<li><a href="https://github.com/lfz/DSB2017/blob/master/solution-grt123-team.pdf" target="_blank" rel="external">算法描述</a></li>
+</ul>
+<h1 id="总结">总结</h1>
+<p>冠军的算法充分地了深度学习现有的一些成果，还有许多训练，设计技巧，读完收获还是很大的。写下这篇博客做个笔记，也算是对近期工作的总结吧。</p>
 
-            
-            <div class="one-tag-list">
-                <span class="fa fa-calendar-times-o listing-seperator" id="2017">
-                    <span class="tag-text">2017</span>
-                </span>
-                <ul>
                 
-                  <!-- <li class="listing-item">
-                  <time datetime="{{ post.date | date:"%Y-%m-%d" }}">{{ post.date | date:"%Y-%m-%d" }}</time>
-                  <a href="{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
-                  </li> -->
-                 <li >
-                    07-18
-                    <i class="fa fa-angle-double-right" aria-hidden="true"></i>
-                    <a href="/2017/07/18/lfz/" style="color: #0085a1">
-                        <span>
-                            DSB2017冠军源码解析
-                        </span>
-                    </a>
-                    <!-- <p class="post-meta">{{ post.date | date:"%Y-%m-%d" }}</p> -->
-                </li>
-                
-                  <!-- <li class="listing-item">
-                  <time datetime="{{ post.date | date:"%Y-%m-%d" }}">{{ post.date | date:"%Y-%m-%d" }}</time>
-                  <a href="{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
-                  </li> -->
-                 <li >
-                    07-13
-                    <i class="fa fa-angle-double-right" aria-hidden="true"></i>
-                    <a href="/2017/07/13/first/" style="color: #0085a1">
-                        <span>
-                            Hello World
-                        </span>
-                    </a>
-                    <!-- <p class="post-meta">{{ post.date | date:"%Y-%m-%d" }}</p> -->
-                </li>
-                
+
+                <hr>
+                <!-- Pager -->
+                <ul class="pager">
+                    
+                    
+                        <li class="next">
+                            <a href="/2017/07/13/first/" data-toggle="tooltip" data-placement="top" title="Hello World">Next Post &rarr;</a>
+                        </li>
+                    
                 </ul>
+
+                <!-- duoshuo Share start -->
+                
+                <!-- 多说 Share end-->
+
+                <!-- 多说评论框 start -->
+                
+                <!-- 多说评论框 end -->
+
+                <!-- disqus comment start -->
+                
+                    <div class="comment">
+                        <div id="disqus_thread" class="disqus-thread"></div>
+                    </div>
+                
+                <!-- disqus comment end -->
             </div>
             
+            <!-- Tabe of Content -->
+            <!-- Table of Contents -->
 
+                
+            <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
 
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#深度学习" title="深度学习">深度学习</a>
+                        
+                          <a class="tag" href="/tags/#3D医学影像处理" title="3D医学影像处理">3D医学影像处理</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="http://www.cnblogs.com/likeFlyingFish/" target="_blank">Hu Fei</a></li>
+                    
+                </ul>
+                
+            </div>
         </div>
     </div>
-</div>
+</article>
 
-                <!-- 如果开启评论功能 -->
-                
-            </div>
 
-          <!-- Sidebar Container -->
-<div class="
-    col-lg-3 col-lg-offset-0
-    col-md-3 col-md-offset-0
-    col-sm-12
-    col-xs-12
-    sidebar-container
-">
-    
-        <!-- Categories -->
 
-    <h5>categories</h3>
-    <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/生活/">生活</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/知识/">知识</a><span class="category-list-count">1</span></li></ul>
-    </div>
 
-        <hr>
-    
-        <!-- Featured Tags -->
+<!-- disqus embedded js code start (one page only need to embed once) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "xichangzun";
+    var disqus_identifier = "https://xichangzun.github.io/2017/07/18/lfz/";
+    var disqus_url = "https://xichangzun.github.io/2017/07/18/lfz/";
 
-<section>
-    <!-- no hr -->
-    <h5><a href="/tags/">FEATURED TAGS</a></h5>
-    <div class="tags">
-        
-            
-        
-            
-        
-    </div>
-</section>
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus embedded js code start end -->
 
-        <hr>
-    
-        <!-- Short About -->
-<section class="visible-md visible-lg">
-    <h5><a href="/about/">ABOUT ME</a></h5>
-    <div class="short-about">
 
-        
-            <img id = "avatar_pic" src="/img/header.jpg" />
-        
 
-        
-            <p>某失意的朋克</p>
-        
 
-        <!-- SNS Link -->
-        <ul class="list-inline">
-            
-            
-                <li>
-                    <a target="_blank" href="https://twitter.com/xichangzun">
-                        <span class="fa-stack fa-lg">
-                            <i class="fa fa-circle fa-stack-2x"></i>
-                            <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
-                        </span>
-                    </a>
-                </li>
-            
-            
-                <li>
-                    <a target="_blank" href="https://www.zhihu.com/people/xi-chang-zun">
-                        <span class="fa-stack fa-lg">
-                            <i class="fa fa-circle fa-stack-2x"></i>
-                            <i class="fa  fa-stack-1x fa-inverse">知</i>
-                        </span>
-                    </a>
-                </li>
-            
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'left',
+          icon: 'ℬ'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
 
-            
-
-            
-
-            
-                <li>
-                    <a target="_blank"  href="https://github.com/xichangzun">
-                        <span class="fa-stack fa-lg">
-                            <i class="fa fa-circle fa-stack-2x"></i>
-                            <i class="fa fa-github fa-stack-1x fa-inverse"></i>
-                        </span>
-                    </a>
-                </li>
-            
-            
-            
-            
-        </ul>
-    </div>
-</section>
-        <hr>
-    
-        <!-- Friends Blog -->
-
-<h5>FRIENDS</h5>
-<ul class="list-inline">
-
-    
-        <li><a href="http://www.cnblogs.com/likeFlyingFish/" target="_blank">Hu Fei</a></li>
-    
-</ul>
-
-        <hr>
-    
-</div>
-
-        
-    </div>
-</div>
 
 
     <!-- Footer -->
