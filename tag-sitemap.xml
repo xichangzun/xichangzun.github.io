@@ -2,15 +2,29 @@
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
     <url>
-        <loc>https://xichangzun.github.io/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/</loc>
+        <loc>https://xichangzun.github.io/tags/3D%E5%8C%BB%E5%AD%A6%E5%BD%B1%E5%83%8F%E5%A4%84%E7%90%86/</loc>
         <lastmod>2017-07-18T14:41:08.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>
 
     <url>
-        <loc>https://xichangzun.github.io/tags/3D%E5%8C%BB%E5%AD%A6%E5%BD%B1%E5%83%8F%E5%A4%84%E7%90%86/</loc>
-        <lastmod>2017-07-18T14:41:08.000Z</lastmod>
+        <loc>https://xichangzun.github.io/tags/%E7%BB%86%E7%B2%92%E5%BA%A6%E5%88%86%E7%B1%BB/</loc>
+        <lastmod>2017-08-17T07:39:19.000Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>https://xichangzun.github.io/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/</loc>
+        <lastmod>2017-08-17T07:39:19.000Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>https://xichangzun.github.io/tags/%E9%9B%86%E6%88%90%E6%A8%A1%E5%9E%8B/</loc>
+        <lastmod>2017-08-17T07:39:19.000Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>
